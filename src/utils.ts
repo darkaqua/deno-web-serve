@@ -1,6 +1,9 @@
 
-export const getCurrentFilePath = (fileName: string) => Deno.realPathSync(new URL(import.meta.url))
-	.replace('utils.ts', fileName)
+export const getCurrentFilePathLOCAL = (fileName: string) => Deno.realPathSync(new URL(import.meta.url))
+	.replace(/\w*.ts/gm, fileName)
+
+export const getCurrentFilePath = (fileName: string) => new URL(import.meta.url).href
+	.replace(/\w*.ts/gm, fileName)
 
 
 export const copyDirRecursive = async (srcDir: string, destDir: string) => {
