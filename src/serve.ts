@@ -36,9 +36,12 @@ export const webServe = async () => {
 	const environmentsJson = JSON.stringify(ENVIRONMENT_LIST
 		.reduce((obj, key) => ({...obj, [key]: Deno.env.get(key)}), {}));
 
-	const developmentHotRefresh = await Deno.readTextFile(
-		getCurrentFilePath('development-hot-refresh.min.js')
-	);
+// 	const developmentHotRefresh = await Deno.readTextFile(
+// 		getCurrentFilePath('development-hot-refresh.min.js')
+// 	);
+	const developmentHotRefreshUrl = "https://raw.githubusercontent.com/pagoru/deno-web-serve/master/src/development-hot-refresh.min.js";
+	const developmentHotRefreshResponse = await fetch(developmentHotRefreshUrl);
+	const developmentHotRefresh = await developmentHotRefreshResponse.text();
 	
 	const indexFileText = (await Deno.readTextFile(currentPublicPath + 'index.html')).replace(
 		/<!-- SCRIPT_ENVS -->/,
