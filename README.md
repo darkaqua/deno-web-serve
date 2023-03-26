@@ -28,7 +28,7 @@ await import('./main.ts');
 #### main.ts
 
 ```ts
-import { webServe } from 'https://deno.land/x/deno-web-serve/mod.ts';
+import { webServe } from 'https://deno.land/x/deno_web_serve/mod.ts';
 
 await webServe();
 ```
