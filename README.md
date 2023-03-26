@@ -1,5 +1,7 @@
 # Deno Web Serve
 
+Template repo with this structure: https://github.com/pagoru/deno-web-serve-template
+
 ### File structure
 - /.env
 - /dev.ts 
