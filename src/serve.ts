@@ -59,19 +59,21 @@ export const webServe = async () => {
 		const socketList: (WebSocket | undefined)[] = [];
 
 		setInterval(async () => {
-			const bundleText = await Deno.readTextFile(currentPublicPath + 'bundle.js');
-
-			const data = new TextEncoder().encode(bundleText);
-			const digest = await crypto.subtle.digest('sha-256', data.buffer);
-			const targetChecksum = new TextDecoder().decode(new Uint8Array(digest));
-
-			if (lastChecksum && lastChecksum !== targetChecksum)
-				socketList.forEach(
-					(ws?: WebSocket) =>
-						ws && ws?.readyState === WebSocket.OPEN && ws?.send('reload')
-				);
-
-			lastChecksum = targetChecksum;
+			try {
+				const bundleText = await Deno.readTextFile(currentPublicPath + 'bundle.js');
+				
+				const data = new TextEncoder().encode(bundleText);
+				const digest = await crypto.subtle.digest('sha-256', data.buffer);
+				const targetChecksum = new TextDecoder().decode(new Uint8Array(digest));
+				
+				if (lastChecksum && lastChecksum !== targetChecksum)
+					socketList.forEach(
+						(ws?: WebSocket) =>
+							ws && ws?.readyState === WebSocket.OPEN && ws?.send('reload')
+					);
+				
+				lastChecksum = targetChecksum;
+			} catch (e) {}
 		}, 100);
 
 		const onRequestWebSocket = (request: Request) => {
