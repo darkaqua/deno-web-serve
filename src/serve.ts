@@ -4,7 +4,7 @@ import {getCurrentFilePath} from "./utils.ts";
 
 const watchPathProcess = async () => {
 	const process = Deno.run({
-		cmd: ['deno', 'run', '-A', '--watch=src/', getCurrentFilePath('watcher.ts')],
+		cmd: ['deno', 'run', '-A', '--unstable', '--watch=src/', getCurrentFilePath('watcher.ts')],
 		stdout: 'piped',
 		stderr: 'piped',
 	});
@@ -19,10 +19,6 @@ const watchPathProcess = async () => {
 	error ? console.error(error) : console.log(`Done!`);
 	
 	process.close();
-}
-
-export const test = () => {
-	console.log(new URL(import.meta.url))
 }
 
 export const webServe = async () => {

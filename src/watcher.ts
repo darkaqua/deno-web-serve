@@ -1,7 +1,7 @@
 import {getCurrentFilePath} from "./utils.ts";
 
 const process = Deno.run({
-	cmd: ['deno', 'run', '-A', getCurrentFilePath('bundler.ts')],
+	cmd: ['deno', 'run', '--unstable', '-A', getCurrentFilePath('bundler.ts')],
 	stdout: 'piped',
 	stderr: 'piped',
 });
