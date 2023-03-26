@@ -21,6 +21,10 @@ const watchPathProcess = async () => {
 	process.close();
 }
 
+export const test = () = {
+	console.log(new URL(import.meta.url))
+}
+
 export const webServe = async () => {
 	const currentPublicPath = path.join(await Deno.cwd(), 'public/')
 	const isDevelopment = Deno.env.get('ENVIRONMENT')! === 'DEVELOPMENT';
