@@ -32,9 +32,6 @@ export const webServe = async () => {
 	const environmentsJson = JSON.stringify(ENVIRONMENT_LIST
 		.reduce((obj, key) => ({...obj, [key]: Deno.env.get(key)}), {}));
 
-// 	const developmentHotRefresh = await Deno.readTextFile(
-// 		getCurrentFilePath('development-hot-refresh.min.js')
-// 	);
 	const developmentHotRefreshUrl = "https://raw.githubusercontent.com/pagoru/deno-web-serve/master/src/development-hot-refresh.min.js";
 	const developmentHotRefreshResponse = await fetch(developmentHotRefreshUrl);
 	const developmentHotRefresh = await developmentHotRefreshResponse.text();
@@ -54,22 +51,23 @@ export const webServe = async () => {
 		let lastChecksum: string | undefined;
 		const socketList: (WebSocket | undefined)[] = [];
 		
-		Deno.writeTextFileSync(currentPublicPath + 'bundle.js', 'test');
-		
 		setInterval(async () => {
-			const bundleText = await Deno.readTextFile(currentPublicPath + 'bundle.js');
-
-			const data = new TextEncoder().encode(bundleText);
-			const digest = await crypto.subtle.digest('sha-256', data.buffer);
-			const targetChecksum = new TextDecoder().decode(new Uint8Array(digest));
-
-			if (lastChecksum && lastChecksum !== targetChecksum)
-				socketList.forEach(
-					(ws?: WebSocket) =>
-						ws && ws?.readyState === WebSocket.OPEN && ws?.send('reload')
-				);
-
-			lastChecksum = targetChecksum;
+			try {
+				const bundleText = await Deno.readTextFile(currentPublicPath + 'bundle.js');
+				
+				const data = new TextEncoder().encode(bundleText);
+				const digest = await crypto.subtle.digest('sha-256', data.buffer);
+				lastChecksum = new TextDecoder().decode(new Uint8Array(digest));
+			} catch (e) {
+				lastChecksum = 'Error';
+				Deno.writeTextFileSync(currentPublicPath + 'bundle.js', 'test');
+			} finally {
+				if (lastChecksum && lastChecksum !== targetChecksum)
+					socketList.forEach(
+						(ws?: WebSocket) =>
+							ws && ws?.readyState === WebSocket.OPEN && ws?.send('reload')
+					);
+			}
 		}, 100);
 
 		const onRequestWebSocket = (request: Request) => {
