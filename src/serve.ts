@@ -21,7 +21,7 @@ const watchPathProcess = async () => {
 	process.close();
 }
 
-export const test = () = {
+export const test = () => {
 	console.log(new URL(import.meta.url))
 }
 
