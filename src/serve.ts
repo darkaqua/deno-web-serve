@@ -52,21 +52,24 @@ export const webServe = async () => {
 		const socketList: (WebSocket | undefined)[] = [];
 		
 		setInterval(async () => {
+			let targetChecksum: string;
 			try {
 				const bundleText = await Deno.readTextFile(currentPublicPath + 'bundle.js');
 				
 				const data = new TextEncoder().encode(bundleText);
 				const digest = await crypto.subtle.digest('sha-256', data.buffer);
-				lastChecksum = new TextDecoder().decode(new Uint8Array(digest));
+				targetChecksum = new TextDecoder().decode(new Uint8Array(digest));
 			} catch (e) {
-				lastChecksum = 'Error';
+				targetChecksum = 'Error';
 				Deno.writeTextFileSync(currentPublicPath + 'bundle.js', 'test');
 			} finally {
-				if (lastChecksum && lastChecksum !== targetChecksum)
+				if (lastChecksum && lastChecksum !== targetChecksum) {
 					socketList.forEach(
 						(ws?: WebSocket) =>
 							ws && ws?.readyState === WebSocket.OPEN && ws?.send('reload')
 					);
+					lastChecksum = targetChecksum;
+				}
 			}
 		}, 100);
 
