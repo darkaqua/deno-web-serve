@@ -1,3 +1,6 @@
+import esbuild from 'npm:esbuild';
+import { ScssModulesPlugin } from 'npm:esbuild-scss-modules-plugin';
+import svgrPlugin from 'npm:esbuild-plugin-svgr'
 
 export const getCurrentFilePathLOCAL = (fileName: string) => Deno.realPathSync(new URL(import.meta.url))
 	.replace(/\w*.ts/gm, fileName)
@@ -20,5 +23,26 @@ export const copyDirRecursive = async (srcDir: string, destDir: string) => {
 		} else {
 			console.warn(`Skipping unsupported directory entry: ${dirEntry.name}`);
 		}
+	}
+}
+
+export const bundle = async () => {
+	try {
+		const srcDir = './src/assets';
+		const destDir = './public/assets';
+		await copyDirRecursive(srcDir, destDir);
+	} catch (err) {
+		console.error(err);
+	}
+	try {
+		await esbuild.build({
+			entryPoints: ['./src/main.tsx'],
+			bundle: true,
+			outfile: './public/bundle.js',
+			minify: false,
+			plugins: [ScssModulesPlugin({ inject: true }), svgrPlugin()],
+		});
+	} catch (e) {
+		console.error(e);
 	}
 }

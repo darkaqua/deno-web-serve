@@ -1,6 +1,6 @@
 import { serve } from '$deno/http/server.ts';
 import * as path from "$deno/path/mod.ts";
-import {getCurrentFilePath} from "./utils.ts";
+import {bundle, getCurrentFilePath} from "./utils.ts";
 
 const watchPathProcess = () => {
 	Deno.run({
@@ -9,6 +9,8 @@ const watchPathProcess = () => {
 		stderr: 'piped',
 	});
 }
+
+export const build = (): Promise<void> => bundle()
 
 export const webServe = async () => {
 	const currentPublicPath = path.join(await Deno.cwd(), 'public/')
