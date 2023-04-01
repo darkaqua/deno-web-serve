@@ -1,6 +1,7 @@
-import { serve } from '$deno/http/server.ts';
-import * as path from "$deno/path/mod.ts";
-import {bundle, getCurrentFilePath} from "./utils.ts";
+import { serve } from 'https://deno.land/std@0.181.0/http/server.ts';
+import * as path from "https://deno.land/std@0.181.0/path/mod.ts";
+import { bundle, getCurrentFilePath } from "./utils.ts";
+import { open } from 'https://deno.land/x/open/index.ts';
 
 const watchPathProcess = () => {
 	Deno.run({
@@ -30,6 +31,7 @@ export const webServe = async () => {
 		window.__env__ = ${environmentsJson}
 	</script>`
 	);
+	const socketList: (WebSocket | undefined)[] = [];
 
 	const DevelopmentFunctions = (() => {
 		if (!isDevelopment) return undefined;
@@ -37,7 +39,6 @@ export const webServe = async () => {
 		console.log('>>> DEVELOPMENT MODE <<<');
 
 		let lastChecksum: string | undefined;
-		const socketList: (WebSocket | undefined)[] = [];
 		
 		setInterval(async () => {
 			let targetChecksum: string;
@@ -86,10 +87,15 @@ export const webServe = async () => {
 	})();
 	
 	
-	if(isDevelopment)
+	if(isDevelopment) {
+		setTimeout(() => {
+			if(socketList.length === 0)
+				open('http://localhost:8080')
+		}, 500)
 		watchPathProcess();
+	}
 	
-	serve(
+	await serve(
 		async (request: Request) => {
 			const webSocketResponse = DevelopmentFunctions?.onRequestWebSocket(request);
 			if (webSocketResponse) return webSocketResponse;
