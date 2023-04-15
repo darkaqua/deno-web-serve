@@ -99,7 +99,7 @@ export const webServe = async (indexFileName?: string = 'main.tsx') => {
 	if(isDevelopment) {
 		setTimeout(() => {
 			if(socketList.length === 0)
-				open('http://localhost:1994')
+				open('http://localhost:8080')
 		}, 500)
 		watchPathProcess(indexFileName);
 	}
@@ -138,7 +138,7 @@ export const webServe = async (indexFileName?: string = 'main.tsx') => {
 
 			return new Response(file?.readable);
 		},
-		{ port: 1994 }
+		{ port: 8080 }
 	);
 	
 }
