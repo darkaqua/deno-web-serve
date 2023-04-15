@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.181.0/http/server.ts';
 import * as path from "https://deno.land/std@0.181.0/path/mod.ts";
-import { bundle, getCurrentFilePath } from "./utils.ts";
+import {bundle, getCurrentDate, getCurrentFilePath} from "./utils.ts";
 import { open } from 'https://deno.land/x/open/index.ts';
 
 const watchPathProcess = (indexFileName: string) => {
@@ -29,7 +29,7 @@ export const webServe = async (indexFileName?: string = 'main.tsx') => {
 	const environmentsJson = JSON.stringify(ENVIRONMENT_LIST
 		.reduce((obj, key) => ({...obj, [key]: Deno.env.get(key)}), {}));
 
-	const developmentHotRefreshUrl = "https://raw.githubusercontent.com/pagoru/deno-web-serve/master/src/development-hot-refresh.min.js";
+	const developmentHotRefreshUrl = "https://raw.githubusercontent.com/pagoru/deno-web-serve/master/src/development-hot-refresh.js";
 	const developmentHotRefreshResponse = await fetch(developmentHotRefreshUrl);
 	const developmentHotRefresh = await developmentHotRefreshResponse.text();
 	
@@ -61,8 +61,8 @@ export const webServe = async (indexFileName?: string = 'main.tsx') => {
 				Deno.writeTextFileSync(currentPublicPath + 'bundle.js', 'test');
 			}
 			if (lastChecksum && lastChecksum !== targetChecksum) {
-				const socketClientList = socketList.filter((ws?: WebSocket) => ws && ws?.readyState === WebSocket.OPEN)
-				console.log(`Sending changes to clients (${socketClientList.length})`)
+				const socketClientList = socketList.filter((ws?: WebSocket) => ws && ws?.readyState === ws.OPEN)
+				console.log(`[${getCurrentDate()}] Sending changes to clients (${socketClientList.length})`)
 				socketClientList.forEach((ws: WebSocket) => ws.send('reload'));
 			}
 			lastChecksum = targetChecksum;
@@ -72,6 +72,7 @@ export const webServe = async (indexFileName?: string = 'main.tsx') => {
 			if (request.headers.get('upgrade') === 'websocket') {
 				const { socket: ws, response } = Deno.upgradeWebSocket(request);
 				socketList.push(ws);
+				ws.onmessage = (m) => console.log(m)
 				return response;
 			}
 		};
@@ -98,7 +99,7 @@ export const webServe = async (indexFileName?: string = 'main.tsx') => {
 	if(isDevelopment) {
 		setTimeout(() => {
 			if(socketList.length === 0)
-				open('http://localhost:8080')
+				open('http://localhost:1994')
 		}, 500)
 		watchPathProcess(indexFileName);
 	}
@@ -137,7 +138,7 @@ export const webServe = async (indexFileName?: string = 'main.tsx') => {
 
 			return new Response(file?.readable);
 		},
-		{ port: 8080 }
+		{ port: 1994 }
 	);
 	
 }
