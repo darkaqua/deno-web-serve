@@ -23,9 +23,9 @@ export const copyDirRecursive = async (srcDir: string, destDir: string) => {
 	}
 }
 
-export const bundle = async () => {
+export const bundle = async (indexFileName: string) => {
 	const process = Deno.run({
-		cmd: ['deno', 'run', '--unstable', '-A', getCurrentFilePath('bundler.ts')],
+		cmd: ['deno', 'run', '--unstable', '-A', getCurrentFilePath('bundler.ts'), `--indexFileName=${indexFileName}`],
 		stdout: 'piped',
 		stderr: 'piped',
 	});

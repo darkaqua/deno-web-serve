@@ -3,17 +3,25 @@ import * as path from "https://deno.land/std@0.181.0/path/mod.ts";
 import { bundle, getCurrentFilePath } from "./utils.ts";
 import { open } from 'https://deno.land/x/open/index.ts';
 
-const watchPathProcess = () => {
+const watchPathProcess = (indexFileName: string) => {
 	Deno.run({
-		cmd: ['deno', 'run', '-A', '--unstable', '--watch=src/', getCurrentFilePath('watcher.ts')],
+		cmd: [
+			'deno',
+			'run',
+			'-A',
+			'--unstable',
+			'--watch=src/',
+			getCurrentFilePath('watcher.ts'),
+			`--indexFileName=${indexFileName}`
+		],
 		stdout: 'piped',
 		stderr: 'piped',
 	});
 }
 
-export const build = (): Promise<void> => bundle()
+export const build = (indexFileName?: string = 'main.tsx'): Promise<void> => bundle(indexFileName)
 
-export const webServe = async () => {
+export const webServe = async (indexFileName?: string = 'main.tsx') => {
 	const currentPublicPath = path.join(await Deno.cwd(), 'public/')
 	const isDevelopment = Deno.env.get('ENVIRONMENT')! === 'DEVELOPMENT';
 	
@@ -92,7 +100,7 @@ export const webServe = async () => {
 			if(socketList.length === 0)
 				open('http://localhost:8080')
 		}, 500)
-		watchPathProcess();
+		watchPathProcess(indexFileName);
 	}
 	
 	await serve(
