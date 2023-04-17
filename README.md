@@ -32,7 +32,7 @@ await import('./main.ts');
 ```ts
 import { webServe } from 'https://deno.land/x/deno_web_serve/mod.ts';
 
-await webServe();
+await webServe("main.tsx");
 ```
 
 #### /public/index.html
