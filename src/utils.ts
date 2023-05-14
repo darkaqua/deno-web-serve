@@ -1,4 +1,3 @@
-
 export const getCurrentFilePathLOCAL = (fileName: string) => Deno.realPathSync(new URL(import.meta.url))
 	.replace(/\w*.ts/gm, fileName)
 
@@ -7,7 +6,7 @@ export const getCurrentFilePath = (fileName: string) => new URL(import.meta.url)
 
 
 export const copyDirRecursive = async (srcDir: string, destDir: string) => {
-	await Deno.mkdir(destDir, { recursive: true });
+	await Deno.mkdir(destDir, {recursive: true});
 	
 	for await (const dirEntry of Deno.readDir(srcDir)) {
 		const srcPath = `${srcDir}/${dirEntry.name}`;
@@ -15,7 +14,7 @@ export const copyDirRecursive = async (srcDir: string, destDir: string) => {
 		
 		if (dirEntry.isFile) {
 			await Deno.copyFile(srcPath, destPath);
-		} else if(dirEntry.isDirectory) {
+		} else if (dirEntry.isDirectory) {
 			await copyDirRecursive(srcPath, destPath);
 		} else {
 			console.warn(`Skipping unsupported directory entry: ${dirEntry.name}`);
@@ -23,21 +22,23 @@ export const copyDirRecursive = async (srcDir: string, destDir: string) => {
 	}
 }
 
-export const bundle = async (indexFileName: string) => {
+export const bundle = async (indexFileName: string, minify: boolean) => {
+	const {stderr} = Deno
+	
 	const process = Deno.run({
-		cmd: ['deno', 'run', '--unstable', '-A', getCurrentFilePath('bundler.ts'), `--indexFileName=${indexFileName}`],
+		cmd: ['deno', 'run', '--unstable', '-A', getCurrentFilePath('bundler.ts'), `--indexFileName=${indexFileName}`, `--minify=${minify}`],
 		stdout: 'piped',
 		stderr: 'piped',
 	});
 	
-	const [, , stderr] = await Promise.all([
+	const [, , currentStderr] = await Promise.all([
 		process.status(),
 		process.output(),
 		process.stderrOutput(),
 	]);
 	
-	const error = new TextDecoder().decode(stderr);
-	error ? console.error(error) : console.log(`Done!`);
+	const error = new TextDecoder().decode(currentStderr);
+	error ? stderr.write(currentStderr) : console.log(`Done!`);
 	
 	process.close();
 }
