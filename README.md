@@ -32,13 +32,18 @@ await import('./main.ts');
 ```ts
 import { webServe } from 'https://deno.land/x/deno_web_serve/mod.ts';
 
-await webServe("main.tsx");
+// First param is the entry file, second param is a bool if you want to minify the bundle.js
+await webServe("main.tsx", true);
 ```
 
 #### /public/index.html
 
 ```html
 <html>
+    <head>
+        ...
+        <link rel="stylesheet" href="/styles.css">
+    </head>
     ...
     <!-- SCRIPT_ENVS -->
     <script type="text/javascript" src="/bundle.js"></script>
