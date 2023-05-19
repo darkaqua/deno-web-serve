@@ -103,7 +103,7 @@ export const webServe = async (port: number = 8080, indexFileName: string = 'mai
 	if(isDevelopment) {
 		setTimeout(() => {
 			if(socketList.length === 0)
-				open('http://localhost:8080')
+				open(`http://localhost:${port}`)
 		}, 500)
 		watchPathProcess(indexFileName, minify, externals);
 	}
