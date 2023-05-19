@@ -29,12 +29,11 @@ export const bundle = async (indexFileName: string, minify: boolean, externals: 
 		cmd: [
 			'deno',
 			'run',
-			'--unstable',
 			'-A',
 			getCurrentFilePath('bundler.ts'),
 			`--indexFileName=${indexFileName}`,
 			`--minify=${minify}`,
-			`--externals=${externals.join(',')}`
+			externals?.length ? `--externals=${externals.join(',')}` : ''
 		],
 		stdout: 'piped',
 		stderr: 'piped',

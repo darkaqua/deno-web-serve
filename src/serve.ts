@@ -9,17 +9,15 @@ const watchPathProcess = async (indexFileName: string, minify: boolean, external
 			'deno',
 			'run',
 			'-A',
-			'--unstable',
 			'--watch=src/',
 			getCurrentFilePath('watcher.ts'),
 			`--indexFileName=${indexFileName}`,
 			`--minify=${minify}`,
-			`--externals=${externals.join(',')}`
+			externals?.length ? `--externals=${externals.join(',')}` : ''
 		],
 		stdout: 'piped',
 		stderr: 'piped',
 	});
-	
 }
 
 export const build = (indexFileName: string = 'main.tsx', minify: boolean = false, externals: string[] = []): Promise<void> =>
@@ -49,27 +47,45 @@ export const webServe = async (port: number = 8080, indexFileName: string = 'mai
 		if (!isDevelopment) return undefined;
 
 		console.log('>>> DEVELOPMENT MODE <<<');
+		
+		const getFileChecksum = async (fileName: string) => {
+			const bundleText = await Deno.readTextFile(currentPublicPath + fileName);
+			
+			const data = new TextEncoder().encode(bundleText);
+			const digest = await crypto.subtle.digest('sha-256', data.buffer);
+			return new TextDecoder().decode(new Uint8Array(digest));
+		}
+		
+		const sendUpdateToClients = () => {
+			const socketClientList = socketList.filter((ws?: WebSocket) => ws && ws?.readyState === ws.OPEN)
+			console.log(`[${getCurrentDate()}] Sending changes to clients (${socketClientList.length})`)
+			socketClientList.forEach((ws: WebSocket) => ws.send('reload'));
+		}
 
-		let lastChecksum: string | undefined;
+		let lastChecksums = {
+			bundle: undefined,
+			styles: undefined
+		}
 		
 		setInterval(async () => {
-			let targetChecksum: string;
+			const targetChecksums = {
+				bundle: undefined,
+				styles: undefined
+			}
 			try {
-				const bundleText = await Deno.readTextFile(currentPublicPath + 'bundle.js');
-				
-				const data = new TextEncoder().encode(bundleText);
-				const digest = await crypto.subtle.digest('sha-256', data.buffer);
-				targetChecksum = new TextDecoder().decode(new Uint8Array(digest));
+				targetChecksums.bundle = await getFileChecksum('bundle.js')
+				targetChecksums.styles = await getFileChecksum('styles.css')
 			} catch (e) {
-				targetChecksum = 'Error';
-				Deno.writeTextFileSync(currentPublicPath + 'bundle.js', 'test');
+				targetChecksums.bundle = 'Error';
+				targetChecksums.styles = 'Error';
+				Deno.writeTextFileSync(currentPublicPath + 'bundle.js', 'error');
+				Deno.writeTextFileSync(currentPublicPath + 'styles.css', 'error');
 			}
-			if (lastChecksum && lastChecksum !== targetChecksum) {
-				const socketClientList = socketList.filter((ws?: WebSocket) => ws && ws?.readyState === ws.OPEN)
-				console.log(`[${getCurrentDate()}] Sending changes to clients (${socketClientList.length})`)
-				socketClientList.forEach((ws: WebSocket) => ws.send('reload'));
-			}
-			lastChecksum = targetChecksum;
+			if((lastChecksums.bundle && lastChecksums.bundle !== targetChecksums.bundle)
+				|| (lastChecksums.styles && lastChecksums.styles !== targetChecksums.styles))
+				sendUpdateToClients()
+			
+			lastChecksums = targetChecksums;
 		}, 20);
 
 		const onRequestWebSocket = (request: Request) => {
@@ -104,7 +120,7 @@ export const webServe = async (port: number = 8080, indexFileName: string = 'mai
 		setTimeout(() => {
 			if(socketList.length === 0)
 				open(`http://localhost:${port}`)
-		}, 500)
+		}, 5000)
 		watchPathProcess(indexFileName, minify, externals);
 	}
 	
