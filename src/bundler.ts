@@ -3,8 +3,9 @@ import { ScssModulesPlugin } from 'npm:esbuild-scss-modules-plugin@1.1.1';
 import svgrPlugin from 'npm:esbuild-plugin-svgr@1.1.0';
 import {copyDirRecursive} from "./utils.ts";
 import { parse } from "https://deno.land/std@0.182.0/flags/mod.ts";
+import { default as externalGlobalPlugin } from 'npm:esbuild-plugin-external-global'
 
-const { indexFileName, minify } = parse(Deno.args)
+const { indexFileName, minify, externals } = parse(Deno.args)
 
 try {
 	const srcDir = './src/assets';
@@ -26,7 +27,11 @@ try {
 				minify: minify === 'true',
 				cssCallback: (css) => cssData += css
 			}),
-			svgrPlugin()
+			svgrPlugin(),
+			externalGlobalPlugin.externalGlobalPlugin(externals ? ((externals.split(',')) as []).reduce((obj, key: string) => ({
+				...obj,
+				[key]: `window.${key.replace(/-/, '')}`
+			}), {}) : {} )
 		],
 		
 	});

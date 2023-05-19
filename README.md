@@ -32,8 +32,18 @@ await import('./main.ts');
 ```ts
 import { webServe } from 'https://deno.land/x/deno_web_serve/mod.ts';
 
-// First param is the entry file, second param is a bool if you want to minify the bundle.js
-await webServe("main.tsx", true);
+/*
+port: 8080,
+entryFile: 'main.tsx',
+minify: true,
+externals: []
+ */
+await webServe(
+  8080, 
+  "main.tsx", 
+  true, 
+  []
+);
 ```
 
 #### /public/index.html

@@ -3,7 +3,7 @@ import * as path from "https://deno.land/std@0.181.0/path/mod.ts";
 import {bundle, getCurrentDate, getCurrentFilePath} from "./utils.ts";
 import { open } from 'https://deno.land/x/open/index.ts';
 
-const watchPathProcess = async (indexFileName: string, minify: boolean) => {
+const watchPathProcess = async (indexFileName: string, minify: boolean, externals: string[]) => {
 	Deno.run({
 		cmd: [
 			'deno',
@@ -13,7 +13,8 @@ const watchPathProcess = async (indexFileName: string, minify: boolean) => {
 			'--watch=src/',
 			getCurrentFilePath('watcher.ts'),
 			`--indexFileName=${indexFileName}`,
-			`--minify=${minify}`
+			`--minify=${minify}`,
+			`--externals=${externals.join(',')}`
 		],
 		stdout: 'piped',
 		stderr: 'piped',
@@ -21,9 +22,10 @@ const watchPathProcess = async (indexFileName: string, minify: boolean) => {
 	
 }
 
-export const build = (indexFileName: string = 'main.tsx', minify: boolean = false): Promise<void> => bundle(indexFileName, minify)
+export const build = (indexFileName: string = 'main.tsx', minify: boolean = false, externals: string[] = []): Promise<void> =>
+	bundle(indexFileName, minify, externals)
 
-export const webServe = async (indexFileName: string = 'main.tsx', minify: boolean = false) => {
+export const webServe = async (port: number = 8080, indexFileName: string = 'main.tsx', minify: boolean = false, externals: string[] = []) => {
 	const currentPublicPath = path.join(await Deno.cwd(), 'public/')
 	const isDevelopment = Deno.env.get('ENVIRONMENT')! === 'DEVELOPMENT';
 	
@@ -103,7 +105,7 @@ export const webServe = async (indexFileName: string = 'main.tsx', minify: boole
 			if(socketList.length === 0)
 				open('http://localhost:8080')
 		}, 500)
-		watchPathProcess(indexFileName, minify);
+		watchPathProcess(indexFileName, minify, externals);
 	}
 	
 	await serve(
@@ -140,7 +142,7 @@ export const webServe = async (indexFileName: string = 'main.tsx', minify: boole
 
 			return new Response(file?.readable);
 		},
-		{ port: 8080 }
+		{ port }
 	);
 	
 }
