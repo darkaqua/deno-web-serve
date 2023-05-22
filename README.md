@@ -32,18 +32,13 @@ await import('./main.ts');
 ```ts
 import { webServe } from 'https://deno.land/x/deno_web_serve/mod.ts';
 
-/*
-port: 8080,
-entryFile: 'main.tsx',
-minify: true,
-externals: []
- */
-await webServe(
-  8080, 
-  "main.tsx", 
-  true, 
-  []
-);
+await webServe({
+	port: 8080,
+	indexFileName: 'main.tsx',
+	minify: false,
+	externals: [],
+	envs: ['ENVIRONMENT']
+});
 ```
 
 #### /public/index.html

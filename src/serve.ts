@@ -20,15 +20,30 @@ const watchPathProcess = async (indexFileName: string, minify: boolean, external
 	});
 }
 
+type Props = {
+	port?: number;
+	indexFileName?: string;
+	minify?: boolean;
+	externals?: string[],
+	envs?: string[]
+}
+
 export const build = (indexFileName: string = 'main.tsx', minify: boolean = false, externals: string[] = []): Promise<void> =>
 	bundle(indexFileName, minify, externals)
 
-export const webServe = async (port: number = 8080, indexFileName: string = 'main.tsx', minify: boolean = false, externals: string[] = []) => {
+export const webServe = async (
+	{
+		port = 8080,
+		indexFileName = 'main.tsx',
+		minify = true,
+		externals = [],
+		envs = ['ENVIRONMENT']
+	}: Props
+) => {
 	const currentPublicPath = path.join(await Deno.cwd(), 'public/')
 	const isDevelopment = Deno.env.get('ENVIRONMENT')! === 'DEVELOPMENT';
 	
-	const ENVIRONMENT_LIST = ["ENVIRONMENT", "API_URL"];
-	const environmentsJson = JSON.stringify(ENVIRONMENT_LIST
+	const environmentsJson = JSON.stringify(envs
 		.reduce((obj, key) => ({...obj, [key]: Deno.env.get(key)}), {}));
 
 	const developmentHotRefreshUrl = "https://raw.githubusercontent.com/pagoru/deno-web-serve/master/src/development-hot-refresh.js";
