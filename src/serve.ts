@@ -61,6 +61,7 @@ export const webServe = async (
 	const DevelopmentFunctions = (() => {
 		if (!isDevelopment) return undefined;
 
+		console.clear();
 		console.log('>>> DEVELOPMENT MODE <<<');
 		
 		const getFileChecksum = async (fileName: string) => {
