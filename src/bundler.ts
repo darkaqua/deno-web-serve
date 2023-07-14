@@ -19,6 +19,8 @@ const {
   mixAllInsideIndex: _mixAllInsideIndex,
 } = parse(Deno.args);
 
+await Deno.mkdir(`./${BUILD_FOLDER}`)
+
 const envs = JSON.parse(_envs);
 const minify = _minify === "true";
 const mixAllInsideIndex = _mixAllInsideIndex === "true";
@@ -108,13 +110,11 @@ try {
   const assetsDir = `./${PUBLIC_FOLDER}assets`;
   const buildAssetsDir = `./${BUILD_FOLDER}assets`;
 
-  console.log(mixAllInsideIndex, 'mixAllInsideIndex')
   if (mixAllInsideIndex) {
     const assetsList = await getFilesRecursively(assetsDir);
-    console.log(assetsList, 'assetsList')
 
     await Promise.all(assetsList.map(async (assetFilePath) => {
-      const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}`, "");
+      const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}/`, "");
       if (assetFilePath.includes(".png")) {
         indexFileText = indexFileText.replace(
           assetCleanFilePath,
