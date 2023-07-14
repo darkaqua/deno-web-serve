@@ -117,6 +117,7 @@ try {
 
     await Promise.all(assetsList.map(async (assetFilePath) => {
       const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}`, "");
+      console.log(assetFilePath, assetCleanFilePath)
       if (assetFilePath.includes(".png")) {
         indexFileText = indexFileText.replace(
           assetCleanFilePath,
