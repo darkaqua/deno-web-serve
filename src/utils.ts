@@ -9,14 +9,18 @@ export const getCurrentFilePath = (fileName: string) =>
   new URL(import.meta.url).href
     .replace(/\w*.ts/gm, fileName);
 
-export const copyDirRecursive = async (srcDir: string, destDir: string, ignoreFiles: string[] = []) => {
+export const copyDirRecursive = async (
+  srcDir: string,
+  destDir: string,
+  ignoreFiles: string[] = [],
+) => {
   await Deno.mkdir(destDir, { recursive: true });
 
   for await (const dirEntry of Deno.readDir(srcDir)) {
     const srcPath = `${srcDir}/${dirEntry.name}`;
     const destPath = `${destDir}/${dirEntry.name}`;
 
-    if(!ignoreFiles.includes(dirEntry.name)) {
+    if (!ignoreFiles.includes(dirEntry.name)) {
       if (dirEntry.isFile) {
         await Deno.copyFile(srcPath, destPath);
       } else if (dirEntry.isDirectory) {
@@ -72,3 +76,26 @@ export const getCurrentDate = () => {
 
   return `${hours}:${minutes}:${seconds}.${milliseconds}`;
 };
+
+export async function getFilesRecursively(path: string): Promise<string[]> {
+  const files: string[] = [];
+
+  for await (const entry of Deno.readDir(path)) {
+    const entryPath = `${path}/${entry.name}`;
+
+    if (entry.isDirectory) {
+      const nestedFiles = await getFilesRecursively(entryPath);
+      files.push(...nestedFiles);
+    } else {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+}
+
+export async function pngToBase64(filePath: string): Promise<string> {
+  const data = await Deno.readFile(filePath);
+  const base64 = btoa(String.fromCharCode(...data));
+  return `data:image/png;base64,${base64}`;
+}

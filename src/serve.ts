@@ -35,7 +35,7 @@ export const build = ({
   externals = [],
   mixAllInsideIndex = false,
 }: Props): Promise<void> =>
-  bundle(indexFileName, envs, minify, externals, mixAllInsideIndex);
+  bundle(indexFileName, JSON.stringify(envs), minify, externals, mixAllInsideIndex);
 
 export const webServe = async (
   {
@@ -107,8 +107,7 @@ export const webServe = async (
               lastChecksums.styles !== targetChecksums.styles)
           )
       ) {
-        
-        console.log('send!')
+        console.log("send!");
         sendUpdateToClients();
       }
 
@@ -140,7 +139,7 @@ export const webServe = async (
       args: [
         "run",
         "-A",
-        "--watch=src/",
+        "--watch=src/,public/",
         getCurrentFilePath("bundlerWatcher.ts"),
         `--indexFileName=${indexFileName}`,
         `--envs=${JSON.stringify(envs)}`,
@@ -172,13 +171,14 @@ export const webServe = async (
       }
 
       if (!file) {
-        if (filepath?.split("/")?.pop()?.includes("."))
+        if (filepath?.split("/")?.pop()?.includes(".")) {
           return new Response("404 Not Found", { status: 404 });
-        
+        }
+
         const indexFileText = await Deno.readTextFile(
           currentBuildPath + "index.html",
         );
-        
+
         return new Response(indexFileText, {
           headers: {
             "content-type": "text/html",
