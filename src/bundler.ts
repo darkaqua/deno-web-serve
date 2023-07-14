@@ -19,7 +19,9 @@ const {
   mixAllInsideIndex: _mixAllInsideIndex,
 } = parse(Deno.args);
 
-await Deno.mkdir(`./${BUILD_FOLDER}`)
+try {
+  await Deno.mkdir(`./${BUILD_FOLDER}`)
+} catch (e) {}
 
 const envs = JSON.parse(_envs);
 const minify = _minify === "true";
