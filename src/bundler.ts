@@ -116,7 +116,7 @@ try {
     const assetsList = await getFilesRecursively(assetsDir);
 
     await Promise.all(assetsList.map(async (assetFilePath) => {
-      const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}/`, "");
+      const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}`, "");
       if (assetFilePath.includes(".png")) {
         indexFileText = indexFileText.replace(
           assetCleanFilePath,
