@@ -140,7 +140,7 @@ export const webServe = async (
         "run",
         "-A",
         "--watch=src/,public/",
-        getCurrentFilePath("bundlerWatcher.ts"),
+        getCurrentFilePath("bundlerWatcher. ts"),
         `--indexFileName=${indexFileName}`,
         `--envs=${JSON.stringify(envs)}`,
         `--minify=${minify}`,

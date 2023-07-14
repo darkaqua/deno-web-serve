@@ -105,15 +105,16 @@ try {
 }
 
 try {
-  await copyDirRecursive(PUBLIC_FOLDER, BUILD_FOLDER, ["index.html"]);
-  const assetsDir = `./${PUBLIC_FOLDER}/assets`;
+  const assetsDir = `./${PUBLIC_FOLDER}assets`;
   const buildAssetsDir = `./${BUILD_FOLDER}assets`;
 
+  console.log(mixAllInsideIndex, 'mixAllInsideIndex')
   if (mixAllInsideIndex) {
     const assetsList = await getFilesRecursively(assetsDir);
+    console.log(assetsList, 'assetsList')
 
     await Promise.all(assetsList.map(async (assetFilePath) => {
-      const assetCleanFilePath = assetFilePath.replace("./src/", "");
+      const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}`, "");
       if (assetFilePath.includes(".png")) {
         indexFileText = indexFileText.replace(
           assetCleanFilePath,
