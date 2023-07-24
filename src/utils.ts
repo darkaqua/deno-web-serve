@@ -15,14 +15,19 @@ export const copyDirRecursive = async (
   ignoreFiles: string[] = [],
 ) => {
   await Deno.mkdir(destDir, { recursive: true });
-
+  
   for await (const dirEntry of Deno.readDir(srcDir)) {
     const srcPath = `${srcDir}/${dirEntry.name}`;
     const destPath = `${destDir}/${dirEntry.name}`;
-
+    
     if (!ignoreFiles.includes(dirEntry.name)) {
       if (dirEntry.isFile) {
-        await Deno.copyFile(srcPath, destPath);
+        const srcFileInfo = await Deno.stat(srcPath);
+        const destFileInfo = await getFileInfo(destPath);
+        
+        if (!destFileInfo || shouldCopyFile(srcFileInfo, destFileInfo)) {
+          await Deno.copyFile(srcPath, destPath);
+        }
       } else if (dirEntry.isDirectory) {
         await copyDirRecursive(srcPath, destPath);
       } else {
@@ -32,7 +37,29 @@ export const copyDirRecursive = async (
   }
 };
 
-export const bundle = async (
+const getFileInfo = async (path: string): Promise<Deno.FileInfo | null> => {
+  try {
+    return await Deno.stat(path);
+  } catch (error) {
+    // If the file doesn't exist, stat will throw an error.
+    // We catch the error and return null instead.
+    if (error instanceof Deno.errors.NotFound) {
+      return null;
+    }
+    throw error;
+  }
+};
+
+const shouldCopyFile = (srcInfo: Deno.FileInfo, destInfo: Deno.FileInfo | null): boolean => (
+  // Check if the destination file doesn't exist.
+  !destInfo ||
+  // Check if the source file has been modified more recently than the destination file.
+  srcInfo.mtime?.getTime()! > destInfo?.mtime?.getTime()! ||
+  // Check if the source file size is different from the destination file size.
+  srcInfo.size !== destInfo?.size
+)
+
+export const bundle = (
   indexFileName: string,
   envs: string,
   minify: boolean,
@@ -55,7 +82,8 @@ export const bundle = async (
       `--mixAllInsideIndex=${mixAllInsideIndex}`,
     ],
   });
-
+  
+  console.log('???')
   const { code, stdout, stderr } = command.outputSync();
   console.log(code === 0 ? "Done!" : undefined);
   if (stdout.length) {

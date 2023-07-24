@@ -72,7 +72,7 @@ try {
       window.__env__ = ${JSON.stringify(envs)}
     </script>`,
   );
-
+  
   if (mixAllInsideIndex) {
     indexFileText = indexFileText.replace(
       /<!-- SCRIPT_BUNDLE -->/,
