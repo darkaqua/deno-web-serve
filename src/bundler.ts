@@ -139,3 +139,6 @@ try {
 
 const indexFilePath = `./${BUILD_FOLDER}index.html`;
 Deno.writeTextFileSync(indexFilePath, indexFileText);
+
+if(isDevelopment)
+  await (await fetch('http://localhost:8080/_bundler')).text()

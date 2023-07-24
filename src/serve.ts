@@ -6,7 +6,7 @@ import {
   getCurrentDate,
   getCurrentFilePath,
 } from "./utils.ts";
-import { open } from "https://deno.land/x/open/index.ts";
+import { open } from "https://deno.land/x/open@v0.0.6/index.ts";
 
 type Props = {
   port?: number;
@@ -23,9 +23,9 @@ type ServeProps = {
 } & Props;
 
 type ChecksumType = {
-  index: string | undefined;
-  bundle: string | undefined;
-  styles: string | undefined;
+  index: string | null;
+  bundle: string | null;
+  styles: string | null;
 };
 
 export const build = ({
@@ -58,14 +58,6 @@ export const webServe = async (
     console.clear();
     console.log(">>> DEVELOPMENT MODE <<<");
 
-    const getFileChecksum = async (fileName: string) => {
-      const bundleText = await Deno.readTextFile(currentBuildPath + fileName);
-
-      const data = new TextEncoder().encode(bundleText);
-      const digest = await crypto.subtle.digest("sha-256", data.buffer);
-      return new TextDecoder().decode(new Uint8Array(digest));
-    };
-
     const sendUpdateToClients = () => {
       const socketClientList = socketList.filter((ws?: WebSocket) =>
         ws && ws?.readyState === ws.OPEN
@@ -76,54 +68,16 @@ export const webServe = async (
       socketClientList.forEach((ws: WebSocket) => ws.send("reload"));
     };
 
-    let lastChecksums: ChecksumType = {
-      index: undefined,
-      bundle: undefined,
-      styles: undefined,
-    };
-
-    setInterval(async () => {
-      const targetChecksums: ChecksumType = {
-        index: undefined,
-        bundle: undefined,
-        styles: undefined,
-      };
-      try {
-        if (mixAllInsideIndex) {
-          targetChecksums.index = await getFileChecksum("index.html");
-        } else {
-          targetChecksums.bundle = await getFileChecksum("bundle.js");
-          targetChecksums.styles = await getFileChecksum("styles.css");
-        }
-      } catch (e) {}
-      if (
-        mixAllInsideIndex
-          ? (lastChecksums.index &&
-            lastChecksums.index !== targetChecksums.index)
-          : (
-            (lastChecksums.bundle &&
-              lastChecksums.bundle !== targetChecksums.bundle) ||
-            (lastChecksums.styles &&
-              lastChecksums.styles !== targetChecksums.styles)
-          )
-      ) {
-        console.log("send!");
-        sendUpdateToClients();
-      }
-
-      lastChecksums = targetChecksums;
-    }, 50);
-
     const onRequestWebSocket = (request: Request) => {
       if (request.headers.get("upgrade") === "websocket") {
         const { socket: ws, response } = Deno.upgradeWebSocket(request);
         socketList.push(ws);
-        ws.onmessage = (m) => console.log(m);
         return response;
       }
     };
 
     return {
+      sendUpdateToClients,
       onRequestWebSocket,
     };
   })();
@@ -162,6 +116,10 @@ export const webServe = async (
       const filepath = url.pathname ? decodeURIComponent(url.pathname) : "";
 
       let file;
+      if (isDevelopment && filepath === "/_bundler") {
+        DevelopmentFunctions?.sendUpdateToClients()
+        return new Response();
+      }
       if (filepath !== "/") {
         try {
           file = await Deno.open(currentBuildPath + filepath, { read: true });
