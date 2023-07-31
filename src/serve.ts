@@ -14,7 +14,7 @@ type Props = {
   indexFileName?: string;
   minify?: boolean;
   externals?: string[];
-  mixAllInsideIndex?: boolean;
+  bundleAssets?: boolean;
 };
 
 type ServeProps = {
@@ -33,9 +33,9 @@ export const build = ({
   envs = [],
   minify = false,
   externals = [],
-  mixAllInsideIndex = false,
+  bundleAssets = false,
 }: Props): Promise<void> =>
-  bundle(indexFileName, JSON.stringify(envs), minify, externals, mixAllInsideIndex);
+  bundle(indexFileName, JSON.stringify(envs), minify, externals, bundleAssets);
 
 export const webServe = async (
   {
@@ -44,7 +44,7 @@ export const webServe = async (
     minify = true,
     externals = [],
     envs = ["ENVIRONMENT"],
-    mixAllInsideIndex = false,
+    bundleAssets = false,
   }: ServeProps,
 ) => {
   const currentBuildPath = path.join(await Deno.cwd(), BUILD_FOLDER);
@@ -88,18 +88,18 @@ export const webServe = async (
         open(`http://localhost:${port}`);
       }
     }, 1000);
-
+    
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
         "-A",
         "--watch=src/,public/",
-        getCurrentFilePath("bundlerWatcher.ts"),
+        getCurrentFilePath("bundler.ts"),
         `--indexFileName=${indexFileName}`,
         `--envs=${JSON.stringify(envs)}`,
         `--minify=${minify}`,
         externals?.length ? `--externals=${externals.join(",")}` : "",
-        `--mixAllInsideIndex=${mixAllInsideIndex}`,
+        `--mixAllInsideIndex=${bundleAssets}`,
       ],
     });
     command.spawn();

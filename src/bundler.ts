@@ -11,6 +11,8 @@ import {
 import { parse } from "https://deno.land/std@0.182.0/flags/mod.ts";
 import { default as externalGlobalPlugin } from "npm:esbuild-plugin-external-global";
 
+console.log(Date.now(), '1')
+
 const {
   indexFileName,
   envs: _envs,
@@ -18,6 +20,7 @@ const {
   externals,
   mixAllInsideIndex: _mixAllInsideIndex,
 } = parse(Deno.args);
+
 
 try {
   await Deno.mkdir(`./${BUILD_FOLDER}`)
@@ -77,7 +80,6 @@ try {
     indexFileText = indexFileText.replace(
       /<!-- SCRIPT_BUNDLE -->/,
       `<script type="text/javascript">
-        const fetch = (async (data) => ({ json: async () => data }));
         ${bundleText.outputFiles[0].text}
         </script>`,
     );
@@ -108,6 +110,8 @@ try {
   console.error(e);
 }
 
+console.log(Date.now(), '2')
+
 try {
   const assetsDir = `./${PUBLIC_FOLDER}assets`;
   const buildAssetsDir = `./${BUILD_FOLDER}assets`;
@@ -136,9 +140,10 @@ try {
 } catch (err) {
   console.error(err);
 }
-
+console.log(Date.now(), '3')
 const indexFilePath = `./${BUILD_FOLDER}index.html`;
 Deno.writeTextFileSync(indexFilePath, indexFileText);
+console.log(Date.now(), 'Done!')
 
-if(isDevelopment)
-  await (await fetch('http://localhost:8080/_bundler')).text()
+// if(isDevelopment)
+//   await (await fetch('http://localhost:8080/_bundler')).text()
