@@ -89,6 +89,10 @@ export const webServe = async (
       }
     }, 1000);
     
+    const environments = envs.reduce(
+      (obj, key) => ({ ...obj, [key]: Deno.env.get(key) }),
+      {},
+    );
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
@@ -96,7 +100,7 @@ export const webServe = async (
         "--watch=src/,public/",
         getCurrentFilePath("bundler.ts"),
         `--indexFileName=${indexFileName}`,
-        `--envs=${JSON.stringify(envs)}`,
+        `--envs=${JSON.stringify(environments)}`,
         `--minify=${minify}`,
         externals?.length ? `--externals=${externals.join(",")}` : "",
         `--mixAllInsideIndex=${bundleAssets}`,
