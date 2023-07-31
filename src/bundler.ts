@@ -145,5 +145,5 @@ const indexFilePath = `./${BUILD_FOLDER}index.html`;
 Deno.writeTextFileSync(indexFilePath, indexFileText);
 console.log(Date.now(), 'Done!')
 
-// if(isDevelopment)
-//   await (await fetch('http://localhost:8080/_bundler')).text()
+if(isDevelopment)
+  await (await fetch('http://localhost:8080/_bundler')).text()
