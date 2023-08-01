@@ -7,11 +7,29 @@ import {
   getFilesRecursively,
   pngToBase64,
   PUBLIC_FOLDER,
+  getCurrentFilePathLOCAL
 } from "./utils.ts";
 import { parse } from "https://deno.land/std@0.182.0/flags/mod.ts";
 import { default as externalGlobalPlugin } from "npm:esbuild-plugin-external-global";
+import dayjs from "npm:dayjs@1.11.9";
 
-console.log(Date.now(), '1')
+const getPrintableDatetime = () => dayjs().format('HH:mm:ss')
+
+const startDatetime = Date.now();
+const warningList = [];
+const printConsole = (text: string, warning: boolean = false) => {
+  const currentMs = Date.now() - startDatetime;
+  if(warning) warningList.push(text);
+  console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, warning ? `WARNING(${text})` : text)
+}
+const printDone = () => {
+  const currentMs = Date.now() - startDatetime;
+  console.clear()
+  console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , warningList.length === 0 ? `!` : `with the next warnings:`)
+  warningList.forEach(text => console.error('-', text))
+}
+
+printConsole('Start bundling!')
 
 const {
   indexFileName,
@@ -23,8 +41,16 @@ const {
 
 
 try {
-  await Deno.mkdir(`./${BUILD_FOLDER}`)
-} catch (e) {}
+  try {
+    printConsole('Checking if build folder already exists')
+    await Deno.stat(`./${BUILD_FOLDER}`)
+  } catch (e) {
+    printConsole('Trying to create the build folder')
+    await Deno.mkdir(`./${BUILD_FOLDER}`)
+  }
+} catch (e) {
+  printConsole('Impossible to create the build folder', true)
+}
 
 const envs = JSON.parse(_envs);
 const minify = _minify === "true";
@@ -33,18 +59,26 @@ const mixAllInsideIndex = _mixAllInsideIndex === "true";
 const isDevelopment = envs?.ENVIRONMENT === "DEVELOPMENT";
 
 let developmentHotRefresh;
-
 if (isDevelopment) {
-  const developmentHotRefreshUrl =
-    "https://raw.githubusercontent.com/pagoru/deno-web-serve/master/src/development-hot-refresh.js";
-  const developmentHotRefreshResponse = await fetch(developmentHotRefreshUrl);
-  developmentHotRefresh = await developmentHotRefreshResponse.text();
+  try {
+    printConsole('Reading development-hot-refresh file from local')
+    developmentHotRefresh = await Deno.readTextFile(getCurrentFilePathLOCAL(`development-hot-refresh.js`));
+  } catch (e) {
+    printConsole('Impossible to read development-hot-refresh file from local', true)
+  }
 }
 
-let indexFileText = await Deno.readTextFile(`./${PUBLIC_FOLDER}index.html`);
+let indexFileText;
+try {
+  printConsole('Reading index.html from public folder')
+  indexFileText = await Deno.readTextFile(`./${PUBLIC_FOLDER}index.html`);
+} catch (e) {
+  printConsole('Impossible to read index.html from public folder', true)
+}
 
 try {
   let cssData = "";
+  printConsole(`Bundling ${indexFileName} from src folder`)
   const bundleText = await esbuild.build({
     entryPoints: [`./src/${indexFileName}`],
     bundle: true,
@@ -68,6 +102,7 @@ try {
       ),
     ],
   });
+  printConsole(`Bundling complete!`)
 
   indexFileText = indexFileText.replace(
     /<!-- SCRIPT_ENVS -->/,
@@ -96,6 +131,7 @@ try {
       `<script type="text/javascript" src="/bundle.js"></script>`,
     );
     if (cssData) {
+      printConsole(`Writing styles.css file to the build folder`)
       Deno.writeTextFileSync(`./${BUILD_FOLDER}styles.css`, cssData);
     }
   }
@@ -107,18 +143,18 @@ try {
     );
   }
 } catch (e) {
-  console.error(e);
+  printConsole(`Something went extremely wrong during the bundler process!`, true)
 }
-
-console.log(Date.now(), '2')
 
 try {
   const assetsDir = `./${PUBLIC_FOLDER}assets`;
   const buildAssetsDir = `./${BUILD_FOLDER}assets`;
 
   if (mixAllInsideIndex) {
+    printConsole(`Reading recursively the assets public folder`)
     const assetsList = await getFilesRecursively(assetsDir);
-
+    
+    printConsole(`Processing assets from asets public folder`)
     await Promise.all(assetsList.map(async (assetFilePath) => {
       const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}`, "");
       if (assetFilePath.includes(".png")) {
@@ -135,15 +171,27 @@ try {
       }
     }));
   } else {
+    printConsole(`Copying assets public folder to the build folder recursively`)
     await copyDirRecursive(assetsDir, buildAssetsDir);
   }
 } catch (err) {
-  console.error(err);
+  printConsole(`Something went extremely wrong with the assets!`, true)
 }
-console.log(Date.now(), '3')
-const indexFilePath = `./${BUILD_FOLDER}index.html`;
-Deno.writeTextFileSync(indexFilePath, indexFileText);
-console.log(Date.now(), 'Done!')
 
-if(isDevelopment)
-  await (await fetch('http://localhost:8080/_bundler')).text()
+try {
+  printConsole(`Writing index.html file to the build folder`)
+  Deno.writeTextFileSync(`./${BUILD_FOLDER}index.html`, indexFileText);
+} catch (e) {
+  printConsole(`Impossible to write index.html file to the build folder`, true)
+}
+
+if(isDevelopment) {
+  printConsole(`Calling bundler process for hot reload connected clients`)
+  try {
+    await (await fetch('http://localhost:8080/_bundler')).text()
+  } catch (e) {
+    printConsole(`Impossible to call bundler process for hot reload connected clients`, true)
+  }
+}
+
+printDone()
