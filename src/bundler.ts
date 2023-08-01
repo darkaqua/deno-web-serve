@@ -24,7 +24,7 @@ const printConsole = (text: string, warning: boolean = false) => {
 }
 const printDone = () => {
   const currentMs = Date.now() - startDatetime;
-  console.clear()
+  // console.clear()
   console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , warningList.length === 0 ? `!` : `with the next warnings:`)
   warningList.forEach(text => console.error('-', text))
 }
@@ -62,8 +62,7 @@ let developmentHotRefresh;
 if (isDevelopment) {
   try {
     printConsole('Reading development-hot-refresh file from local')
-    console.log(import.meta.url);
-    developmentHotRefresh = await Deno.readTextFile(getCurrentFilePathLOCAL(`development-hot-refresh.js`));
+    developmentHotRefresh = await (await (fetch(import.meta.url.replace('bundler.ts', 'development-hot-refresh.js')))).text();
   } catch (e) {
     printConsole('Impossible to read development-hot-refresh file from local', true)
   }
