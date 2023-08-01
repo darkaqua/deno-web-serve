@@ -68,7 +68,6 @@ if (isDevelopment) {
     printConsole('Impossible to read development-hot-refresh file from local', true)
   }
 }
-return;
 
 let indexFileText;
 try {
