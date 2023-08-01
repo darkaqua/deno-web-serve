@@ -7,7 +7,6 @@ import {
   getFilesRecursively,
   pngToBase64,
   PUBLIC_FOLDER,
-  getCurrentFilePathLOCAL
 } from "./utils.ts";
 import { parse } from "https://deno.land/std@0.182.0/flags/mod.ts";
 import { default as externalGlobalPlugin } from "npm:esbuild-plugin-external-global";
@@ -24,7 +23,7 @@ const printConsole = (text: string, warning: boolean = false) => {
 }
 const printDone = () => {
   const currentMs = Date.now() - startDatetime;
-  // console.clear()
+  console.clear()
   console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , warningList.length === 0 ? `!` : `with the next warnings:`)
   warningList.forEach(text => console.error('-', text))
 }
