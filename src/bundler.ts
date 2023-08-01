@@ -11,6 +11,7 @@ import {
 import { parse } from "https://deno.land/std@0.182.0/flags/mod.ts";
 import { default as externalGlobalPlugin } from "npm:esbuild-plugin-external-global";
 import dayjs from "npm:dayjs@1.11.9";
+import {denoLoaderPlugin} from "./plugins/deno-loader.ts";
 
 const getPrintableDatetime = () => dayjs().format('HH:mm:ss')
 
@@ -99,6 +100,7 @@ try {
           }), {})
           : {},
       ),
+      denoLoaderPlugin()
     ],
   });
   printConsole(`Bundling complete!`)
@@ -109,7 +111,7 @@ try {
       window.__env__ = ${JSON.stringify(envs)}
     </script>`,
   );
-  
+
   if (mixAllInsideIndex) {
     indexFileText = indexFileText.replace(
       /<!-- SCRIPT_BUNDLE -->/,
@@ -152,7 +154,7 @@ try {
   if (mixAllInsideIndex) {
     printConsole(`Reading recursively the assets public folder`)
     const assetsList = await getFilesRecursively(assetsDir);
-    
+
     printConsole(`Processing assets from asets public folder`)
     await Promise.all(assetsList.map(async (assetFilePath) => {
       const assetCleanFilePath = assetFilePath.replace(`./${PUBLIC_FOLDER}`, "");
