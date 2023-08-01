@@ -62,7 +62,7 @@ let developmentHotRefresh;
 if (isDevelopment) {
   try {
     printConsole('Reading development-hot-refresh file from local')
-    console.log(getCurrentFilePathLOCAL(`development-hot-refresh.js`));
+    console.log(import.meta.url);
     developmentHotRefresh = await Deno.readTextFile(getCurrentFilePathLOCAL(`development-hot-refresh.js`));
   } catch (e) {
     printConsole('Impossible to read development-hot-refresh file from local', true)
