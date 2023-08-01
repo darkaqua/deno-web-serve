@@ -62,11 +62,13 @@ let developmentHotRefresh;
 if (isDevelopment) {
   try {
     printConsole('Reading development-hot-refresh file from local')
+    console.log(getCurrentFilePathLOCAL(`development-hot-refresh.js`));
     developmentHotRefresh = await Deno.readTextFile(getCurrentFilePathLOCAL(`development-hot-refresh.js`));
   } catch (e) {
     printConsole('Impossible to read development-hot-refresh file from local', true)
   }
 }
+return;
 
 let indexFileText;
 try {
