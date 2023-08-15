@@ -16,17 +16,22 @@ import {denoLoaderPlugin} from "./plugins/deno-loader.ts";
 const getPrintableDatetime = () => dayjs().format('HH:mm:ss')
 
 const startDatetime = Date.now();
-const warningList = [];
-const printConsole = (text: string, warning: boolean = false) => {
+const warningList: string[] = [];
+const errorList: string[] = [];
+const printConsole = (text: string, warning: boolean = false, error: boolean = false) => {
   const currentMs = Date.now() - startDatetime;
-  if(warning) warningList.push(text);
+  if(error) errorList.push(text)
+  else if(warning) warningList.push(text);
   console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, warning ? `WARNING(${text})` : text)
 }
 const printDone = () => {
   const currentMs = Date.now() - startDatetime;
-  console.clear()
-  console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , warningList.length === 0 ? `!` : `with the next warnings:`)
-  warningList.forEach(text => console.error('-', text))
+  if(!errorList.length)
+    console.clear()
+  
+  const thingsList = [...warningList, ...errorList];
+  console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , thingsList.length === 0 ? `!` : `with the next warnings:`)
+  thingsList.forEach(text => console.error('-', text))
 }
 
 printConsole('Start bundling!')
@@ -144,7 +149,7 @@ try {
     );
   }
 } catch (e) {
-  printConsole(`Something went extremely wrong during the bundler process!`, true)
+  printConsole(`Something went extremely wrong during the bundler process!`, false, true)
 }
 
 try {

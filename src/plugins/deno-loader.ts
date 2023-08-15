@@ -41,9 +41,7 @@ export const denoLoaderPlugin = () => {
       const denoJson = JSON.parse(Deno.readTextFileSync(denoPath))
       const path = denoJson.imports[args.path]
 
-      const ok = bundleExternal(path)
-      console.log('ok', ok)
-      if(!ok) return null
+      if(!bundleExternal(path)) return null
       return {
         path: path,
         namespace: "deno-loader"
