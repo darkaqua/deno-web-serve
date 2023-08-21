@@ -15,6 +15,7 @@ type Props = {
   minify?: boolean;
   externals?: string[];
   bundleAssets?: boolean;
+  plugins?: string[]
 };
 
 type ServeProps = {
@@ -34,8 +35,9 @@ export const build = ({
   minify = false,
   externals = [],
   bundleAssets = false,
+                        plugins = []
 }: Props): Promise<void> =>
-  bundle(indexFileName, JSON.stringify(envs), minify, externals, bundleAssets);
+  bundle(indexFileName, JSON.stringify(envs), minify, externals, bundleAssets, plugins);
 
 export const webServe = async (
   {
@@ -45,6 +47,7 @@ export const webServe = async (
     externals = [],
     envs = ["ENVIRONMENT"],
     bundleAssets = false,
+    plugins = []
   }: ServeProps,
 ) => {
   const currentBuildPath = path.join(await Deno.cwd(), BUILD_FOLDER);
@@ -104,6 +107,7 @@ export const webServe = async (
         `--minify=${minify}`,
         externals?.length ? `--externals=${externals.join(",")}` : "",
         `--mixAllInsideIndex=${bundleAssets}`,
+        plugins?.length ? `--plugins=${plugins.join(',')}` : ""
       ],
     });
     command.spawn();

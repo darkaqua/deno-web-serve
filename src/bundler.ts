@@ -42,8 +42,13 @@ const {
   minify: _minify,
   externals,
   mixAllInsideIndex: _mixAllInsideIndex,
+  plugins: _plugins
 } = parse(Deno.args);
 
+let plugins = [];
+try {
+  plugins = _plugins?.split(',');
+} catch (e) {}
 
 try {
   try {
@@ -84,29 +89,32 @@ try {
 try {
   let cssData = "";
   printConsole(`Bundling ${indexFileName} from src folder`)
+  
+  const bundlePlugins = [
+    ScssModulesPlugin({
+      inject: false,
+      minify: minify,
+      cssCallback: (css) => cssData += css,
+    }),
+    svgrPlugin(),
+    externalGlobalPlugin.externalGlobalPlugin(
+      externals
+        ? ((externals.split(",")) as []).reduce((obj, key: string) => ({
+          ...obj,
+          [key]: `window.${key.replace(/-/, "")}`,
+        }), {})
+        : {},
+    ),
+    plugins?.includes('deno-loader') ? denoLoaderPlugin() : undefined
+  ].filter(Boolean);
+  
   const bundleText = await esbuild.build({
     entryPoints: [`./src/${indexFileName}`],
     bundle: true,
     write: !mixAllInsideIndex,
     outfile: mixAllInsideIndex ? undefined : `./${BUILD_FOLDER}bundle.js`,
     minify: minify,
-    plugins: [
-      ScssModulesPlugin({
-        inject: false,
-        minify: minify,
-        cssCallback: (css) => cssData += css,
-      }),
-      svgrPlugin(),
-      externalGlobalPlugin.externalGlobalPlugin(
-        externals
-          ? ((externals.split(",")) as []).reduce((obj, key: string) => ({
-            ...obj,
-            [key]: `window.${key.replace(/-/, "")}`,
-          }), {})
-          : {},
-      ),
-      denoLoaderPlugin()
-    ],
+    plugins: bundlePlugins as any,
   });
   printConsole(`Bundling complete!`)
 
