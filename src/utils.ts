@@ -65,6 +65,7 @@ export const bundle = (
   minify: boolean,
   externals: string[],
   mixAllInsideIndex: boolean,
+  plugins: string[]
 ) => {
   const environments = JSON.parse(envs).reduce(
     (obj, key) => ({ ...obj, [key]: Deno.env.get(key) }),
@@ -80,6 +81,7 @@ export const bundle = (
       `--minify=${minify}`,
       externals?.length ? `--externals=${externals.join(",")}` : "",
       `--mixAllInsideIndex=${mixAllInsideIndex}`,
+      plugins?.length ? `--plugins=${plugins.join(',')}` : ""
     ],
   });
   
