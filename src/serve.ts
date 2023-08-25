@@ -21,6 +21,7 @@ type Props = {
 type ServeProps = {
   port?: number;
   envs?: string[];
+  openBrowser?: boolean;
 } & Props;
 
 type ChecksumType = {
@@ -35,7 +36,7 @@ export const build = ({
   minify = false,
   externals = [],
   bundleAssets = false,
-                        plugins = []
+                        plugins = [],
 }: Props): Promise<void> =>
   bundle(indexFileName, JSON.stringify(envs), minify, externals, bundleAssets, plugins);
 
@@ -47,7 +48,8 @@ export const webServe = async (
     externals = [],
     envs = ["ENVIRONMENT"],
     bundleAssets = false,
-    plugins = []
+    plugins = [],
+    openBrowser = true
   }: ServeProps,
 ) => {
   const currentBuildPath = path.join(await Deno.cwd(), BUILD_FOLDER);
@@ -87,7 +89,7 @@ export const webServe = async (
 
   if (isDevelopment) {
     setTimeout(() => {
-      if (socketList.length === 0) {
+      if (socketList.length === 0 && openBrowser) {
         open(`http://localhost:${port}`);
       }
     }, 1000);
