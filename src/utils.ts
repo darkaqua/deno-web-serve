@@ -1,13 +1,14 @@
+
 export const PUBLIC_FOLDER = "public/";
 export const BUILD_FOLDER = "build/";
 
 export const getCurrentFilePathLOCAL = (fileName: string) =>
   Deno.realPathSync(new URL(import.meta.url))
-    .replace(/\w*.ts/gm, fileName);
+    .replace(/\w*\.ts/gm, fileName);
 
 export const getCurrentFilePath = (fileName: string) =>
   new URL(import.meta.url).href
-    .replace(/\w*.ts/gm, fileName);
+    .replace(/\w*\.ts/gm, fileName);
 
 export const copyDirRecursive = async (
   srcDir: string,
@@ -60,6 +61,7 @@ const shouldCopyFile = (srcInfo: Deno.FileInfo, destInfo: Deno.FileInfo | null):
 )
 
 export const bundle = (
+  port: number,
   indexFileName: string,
   envs: string,
   minify: boolean,
@@ -78,14 +80,11 @@ export const bundle = (
       getCurrentFilePath("bundler.ts"),
       `--indexFileName=${indexFileName}`,
       `--envs=${JSON.stringify(environments)}`,
-      `--minify=${minify}`,
-      externals?.length ? `--externals=${externals.join(",")}` : "",
       `--mixAllInsideIndex=${mixAllInsideIndex}`,
-      plugins?.length ? `--plugins=${plugins.join(',')}` : ""
+      ...getBuildArgs({ port, minify, externals, plugins })
     ],
   });
   
-  console.log('???')
   const { code, stdout, stderr } = command.outputSync();
   console.log(code === 0 ? "Done!" : undefined);
   if (stdout.length) {
@@ -128,4 +127,18 @@ export async function pngToBase64(filePath: string): Promise<string> {
   const data = await Deno.readFile(filePath);
   const base64 = btoa(String.fromCharCode(...data));
   return `data:image/png;base64,${base64}`;
+}
+
+export const getBuildArgs = ({
+   port = 8080,
+   minify = true,
+   externals = [],
+   plugins = []
+ }: any) => {
+  return [
+    `--port=${port}`,
+    `--minify=${minify}`,
+    externals?.length ? `--externals=${externals.join(",")}` : "",
+    plugins?.length ? `--plugins=${plugins.join(',')}` : ""
+  ]
 }

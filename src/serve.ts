@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.181.0/http/server.ts";
 import * as path from "https://deno.land/std@0.181.0/path/mod.ts";
 import {
   BUILD_FOLDER,
-  bundle,
+  bundle, getBuildArgs,
   getCurrentDate,
   getCurrentFilePath,
 } from "./utils.ts";
@@ -31,14 +31,15 @@ type ChecksumType = {
 };
 
 export const build = ({
+  port = 8080,
   indexFileName = "main.tsx",
   envs = [],
   minify = false,
   externals = [],
   bundleAssets = false,
-                        plugins = [],
-}: Props): Promise<void> =>
-  bundle(indexFileName, JSON.stringify(envs), minify, externals, bundleAssets, plugins);
+  plugins = [],
+}: Props): void =>
+  bundle(port, indexFileName, JSON.stringify(envs), minify, externals, bundleAssets, plugins);
 
 export const webServe = async (
   {
@@ -106,10 +107,8 @@ export const webServe = async (
         getCurrentFilePath("bundler.ts"),
         `--indexFileName=${indexFileName}`,
         `--envs=${JSON.stringify(environments)}`,
-        `--minify=${minify}`,
-        externals?.length ? `--externals=${externals.join(",")}` : "",
         `--mixAllInsideIndex=${bundleAssets}`,
-        plugins?.length ? `--plugins=${plugins.join(',')}` : ""
+        ...getBuildArgs({ port, minify, externals, plugins })
       ],
     });
     command.spawn();

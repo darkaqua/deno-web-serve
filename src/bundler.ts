@@ -37,12 +37,13 @@ const printDone = () => {
 printConsole('Start bundling!')
 
 const {
+  port,
   indexFileName,
   envs: _envs,
   minify: _minify,
   externals,
   mixAllInsideIndex: _mixAllInsideIndex,
-  plugins: _plugins
+  plugins: _plugins,
 } = parse(Deno.args);
 
 let plugins = [];
@@ -61,6 +62,7 @@ try {
 } catch (e) {
   printConsole('Impossible to create the build folder', true)
 }
+
 
 const envs = JSON.parse(_envs);
 const minify = _minify === "true";
@@ -109,15 +111,17 @@ try {
   ].filter(Boolean);
   
   const bundleText = await esbuild.build({
-    entryPoints: [`./src/${indexFileName}`],
+    entryPoints: [`./src/${indexFileName}`, ],
     bundle: true,
-    write: !mixAllInsideIndex,
-    outfile: mixAllInsideIndex ? undefined : `./${BUILD_FOLDER}bundle.js`,
+    write: false,
+    outfile: undefined,
     minify: minify,
     plugins: bundlePlugins as any,
   });
   printConsole(`Bundling complete!`)
 
+  let bundle = bundleText.outputFiles[0].text;
+  
   indexFileText = indexFileText.replace(
     /<!-- SCRIPT_ENVS -->/,
     `<script type="text/javascript">
@@ -129,7 +133,7 @@ try {
     indexFileText = indexFileText.replace(
       /<!-- SCRIPT_BUNDLE -->/,
       `<script type="text/javascript">
-        ${bundleText.outputFiles[0].text}
+        ${bundle}
         </script>`,
     );
     if (cssData) {
@@ -144,6 +148,7 @@ try {
       /<!-- SCRIPT_BUNDLE -->/,
       `<script type="text/javascript" src="/bundle.js"></script>`,
     );
+    Deno.writeTextFileSync(`./${BUILD_FOLDER}bundle.js`, bundle)
     if (cssData) {
       printConsole(`Writing styles.css file to the build folder`)
       Deno.writeTextFileSync(`./${BUILD_FOLDER}styles.css`, cssData);
@@ -202,7 +207,7 @@ try {
 if(isDevelopment) {
   printConsole(`Calling bundler process for hot reload connected clients`)
   try {
-    await (await fetch('http://localhost:8080/_bundler')).text()
+    await (await fetch(`http://localhost:${port}/_bundler`)).text()
   } catch (e) {
     printConsole(`Impossible to call bundler process for hot reload connected clients`, true)
   }
