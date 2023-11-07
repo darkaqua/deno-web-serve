@@ -26,8 +26,8 @@ const printConsole = (text: string, warning: boolean = false, error: boolean = f
 }
 const printDone = () => {
   const currentMs = Date.now() - startDatetime;
-  if(!errorList.length)
-    console.clear()
+  // if(!errorList.length)
+  //   console.clear()
   
   const thingsList = [...warningList, ...errorList];
   console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , thingsList.length === 0 ? `!` : `with the next warnings:`)
