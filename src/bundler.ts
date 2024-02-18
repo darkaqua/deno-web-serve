@@ -110,7 +110,6 @@ try {
     plugins?.includes('deno-loader') ? denoLoaderPlugin() : undefined
   ].filter(Boolean);
   
-  console.log(bundlePlugins)
   const bundleText = await esbuild.build({
     entryPoints: [`./src/${indexFileName}`, ],
     bundle: true,
