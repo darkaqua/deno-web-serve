@@ -69,7 +69,7 @@ export const webServe = async (
         ws && ws?.readyState === ws.OPEN
       );
       console.log(
-        `[${getCurrentDate()}] Sending changes to clients (${socketClientList.length})`,
+        `[${getCurrentDate()}] Sending changes to clients (${socketClientList?.length})`,
       );
       socketClientList.forEach((ws: WebSocket) => ws.send("reload"));
     };
@@ -90,7 +90,7 @@ export const webServe = async (
 
   if (isDevelopment) {
     setTimeout(() => {
-      if (socketList.length === 0 && openBrowser) {
+      if (socketList?.length === 0 && openBrowser) {
         open(`http://localhost:${port}`);
       }
     }, 1000);

@@ -1,6 +1,6 @@
-import esbuild from "npm:esbuild@0.17.0";
+import esbuild from "npm:esbuild@0.20.0";
 import { ScssModulesPlugin } from "npm:esbuild-scss-modules-plugin@1.1.1";
-import svgrPlugin from "npm:esbuild-plugin-svgr@1.1.0";
+import svgrPlugin from "npm:esbuild-plugin-svgr@2.1.0";
 import {
   BUILD_FOLDER,
   copyDirRecursive,
@@ -30,7 +30,7 @@ const printDone = () => {
   //   console.clear()
   
   const thingsList = [...warningList, ...errorList];
-  console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , thingsList.length === 0 ? `!` : `with the next warnings:`)
+  console.log(`DWS - ${getPrintableDatetime()} - [`,currentMs, `ms ] ->`, 'Bundled' , thingsList?.length === 0 ? `!` : `with the next warnings:`)
   thingsList.forEach(text => console.error('-', text))
 }
 
@@ -110,6 +110,7 @@ try {
     plugins?.includes('deno-loader') ? denoLoaderPlugin() : undefined
   ].filter(Boolean);
   
+  console.log(bundlePlugins)
   const bundleText = await esbuild.build({
     entryPoints: [`./src/${indexFileName}`, ],
     bundle: true,

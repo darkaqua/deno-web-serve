@@ -87,10 +87,10 @@ export const bundle = (
   
   const { code, stdout, stderr } = command.outputSync();
   console.log(code === 0 ? "Done!" : undefined);
-  if (stdout.length) {
+  if (stdout?.length) {
     console.log(new TextDecoder().decode(stdout));
   }
-  if (stderr.length) {
+  if (stderr?.length) {
     console.error(new TextDecoder().decode(stderr));
   }
 };
