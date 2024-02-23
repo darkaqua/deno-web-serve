@@ -21,6 +21,8 @@ export const copyDirRecursive = async (
     const srcPath = `${srcDir}/${dirEntry.name}`;
     const destPath = `${destDir}/${dirEntry.name}`;
     
+    if(dirEntry.name.includes('index.html')) continue;
+    
     if (!ignoreFiles.includes(dirEntry.name)) {
       if (dirEntry.isFile) {
         const srcFileInfo = await Deno.stat(srcPath);

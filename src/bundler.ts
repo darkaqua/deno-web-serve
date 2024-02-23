@@ -191,7 +191,7 @@ try {
     }));
   } else {
     printConsole(`Copying assets public folder to the build folder recursively`)
-    await copyDirRecursive(assetsDir, buildAssetsDir);
+    await copyDirRecursive(`./${PUBLIC_FOLDER}`, `./${BUILD_FOLDER}`);
   }
 } catch (err) {
   printConsole(`Something went extremely wrong with the assets!`, true)
