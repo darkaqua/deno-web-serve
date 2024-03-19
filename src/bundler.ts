@@ -95,7 +95,7 @@ try {
   const bundlePlugins = [
     ScssModulesPlugin({
       inject: false,
-      minify: minify,
+      minify: false,
       cssCallback: (css) => cssData += css,
     }),
     svgrPlugin(),
@@ -146,7 +146,7 @@ try {
   } else {
     indexFileText = indexFileText.replace(
       /<!-- SCRIPT_BUNDLE -->/,
-      `<script type="text/javascript" src="/bundle.js"></script>`,
+      `<script type="text/javascript" src="./bundle.js"></script>`,
     );
     Deno.writeTextFileSync(`./${BUILD_FOLDER}bundle.js`, bundle)
     if (cssData) {
